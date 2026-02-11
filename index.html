@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlagCheck: Red or Green?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        /* Custom Animation for Background Blobs */
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+            animation-delay: 4s;
+        }
+
+        /* Smooth transitions for elements */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInAnim 0.5s forwards ease-out;
+        }
+
+        @keyframes fadeInAnim {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col items-center justify-center relative overflow-hidden selection:bg-rose-200 selection:text-rose-900">
+
+    <!-- Decorative Background Blobs -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob"></div>
+        <div class="absolute top-[-10%] right-[-10%] w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000"></div>
+        <div class="absolute bottom-[-10%] left-[20%] w-96 h-96 bg-emerald-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000"></div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app" class="w-full max-w-lg px-6 py-8 z-10">
+        
+        <!-- Header Logo -->
+        <div class="flex justify-center mb-8 fade-in">
+            <div class="bg-white/80 backdrop-blur-md px-5 py-2 rounded-full shadow-sm border border-white/50 flex items-center gap-2">
+                <!-- Flag Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-rose-500 fill-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
+                <span class="font-bold text-slate-700 tracking-tight">FlagCheck</span>
+            </div>
+        </div>
+
+        <!-- SCREEN: START -->
+        <div id="start-screen" class="bg-white/70 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl p-8 text-center fade-in">
+            <div class="w-24 h-24 bg-gradient-to-br from-rose-100 to-rose-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner ring-4 ring-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+            </div>
+            <h1 class="text-4xl font-extrabold text-slate-800 mb-4 tracking-tight">Red or Green?</h1>
+            <p class="text-slate-600 mb-8 text-lg leading-relaxed">
+                Test your relationship radar. Can you distinguish between healthy affection and toxic behavior?
+            </p>
+            <button onclick="startQuiz()" class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold text-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-rose-900/10 flex items-center justify-center gap-2 group cursor-pointer">
+                Start Quiz
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+        </div>
+
+        <!-- SCREEN: QUIZ -->
+        <div id="quiz-screen" class="hidden flex-col gap-6 fade-in">
+            
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-200/50 rounded-full h-2 mb-2 overflow-hidden">
+                <div id="progress-bar" class="bg-slate-800 h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+
+            <!-- Question Card -->
+            <div id="question-card" class="relative bg-white/80 backdrop-blur-xl border border-white/60 rounded-3xl shadow-xl p-8 min-h-[240px] flex flex-col items-center justify-center text-center transition-all duration-300">
+                <span id="question-number" class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Scenario 1</span>
+                <h2 id="question-text" class="text-2xl font-bold text-slate-800 leading-snug">
+                    <!-- Question text goes here -->
+                </h2>
+                
+                <!-- Feedback Icon (Check/X) - Hidden by default -->
+                <div id="feedback-icon-container" class="hidden absolute -top-4 -right-4 bg-white rounded-full p-2 shadow-lg scale-0 transition-transform duration-300">
+                    <!-- Icons injected by JS -->
+                </div>
+            </div>
+
+            <!-- Interaction Area -->
+            <div id="interaction-area" class="relative min-h-[140px]">
+                
+                <!-- Buttons Container -->
+                <div id="buttons-container" class="grid grid-cols-2 gap-4">
+                    <button onclick="handleAnswer('red')" class="group relative overflow-hidden bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 p-6 rounded-2xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 active:translate-y-0 active:scale-95 flex flex-col items-center gap-2 cursor-pointer">
+                        <div class="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-rose-600 fill-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
+                        </div>
+                        <span class="font-bold text-rose-900">Red Flag</span>
+                    </button>
+
+                    <button onclick="handleAnswer('green')" class="group relative overflow-hidden bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 p-6 rounded-2xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 active:translate-y-0 active:scale-95 flex flex-col items-center gap-2 cursor-pointer">
+                        <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-emerald-600 fill-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
+                        </div>
+                        <span class="font-bold text-emerald-900">Green Flag</span>
+                    </button>
+                </div>
+
+                <!-- Feedback Text Container (Hidden by default) -->
+                <div id="feedback-container" class="hidden bg-white/90 backdrop-blur border border-white/50 rounded-2xl p-6 shadow-lg">
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0 mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                        </div>
+                        <div>
+                            <p id="feedback-title" class="font-bold text-slate-900 text-lg mb-1">
+                                <!-- Title injected here -->
+                            </p>
+                            <p id="feedback-text" class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                                <!-- Explanation injected here -->
+                            </p>
+                        </div>
+                    </div>
+                    <button onclick="nextQuestion()" class="w-full mt-6 bg-slate-900 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] transition-all cursor-pointer">
+                        <span id="next-btn-text">Next Question</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- SCREEN: RESULT -->
+        <div id="result-screen" class="hidden bg-white/80 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl p-8 text-center flex-col items-center fade-in">
+            
+            <div class="relative mb-8">
+                <!-- Circular Progress SVG -->
+                <svg class="w-40 h-40 transform -rotate-90 drop-shadow-lg">
+                    <circle cx="80" cy="80" r="70" fill="none" stroke="#f1f5f9" stroke-width="12" stroke-linecap="round" />
+                    <circle id="score-circle" cx="80" cy="80" r="70" fill="none" stroke="#10b981" stroke-width="12" stroke-dasharray="440" stroke-dashoffset="440" stroke-linecap="round" class="transition-all duration-1000 ease-out" />
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span id="final-percent" class="text-5xl font-extrabold text-slate-800">0%</span>
+                </div>
+            </div>
+
+            <h2 id="result-title" class="text-3xl font-bold text-slate-800 mb-2">Title</h2>
+            <p id="result-desc" class="text-slate-600 mb-8 max-w-xs mx-auto text-lg">Description</p>
+
+            <div class="grid grid-cols-2 gap-4 w-full mb-8">
+                <div class="bg-emerald-50 rounded-xl p-4 flex flex-col items-center border border-emerald-100">
+                    <span id="score-correct" class="text-2xl font-bold text-emerald-600">0</span>
+                    <span class="text-xs font-semibold text-emerald-800 uppercase tracking-wider">Correct</span>
+                </div>
+                <div class="bg-rose-50 rounded-xl p-4 flex flex-col items-center border border-rose-100">
+                    <span id="score-incorrect" class="text-2xl font-bold text-rose-600">0</span>
+                    <span class="text-xs font-semibold text-rose-800 uppercase tracking-wider">Incorrect</span>
+                </div>
+            </div>
+
+            <button onclick="startQuiz()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xl shadow-slate-200 cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/><path d="M3 3v9h9"/></svg>
+                Try Again
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // Data
+        const allQuestions = [
+            { id: 1, text: "They communicate their needs clearly without expecting you to read their mind.", type: "green", explanation: "Open communication is the bedrock of a healthy relationship. Expecting mind-reading leads to resentment." },
+            { id: 2, text: "They insist on having access to all your passwords and checking your phone regularly.", type: "red", explanation: "Privacy is a right. Demanding constant access is a sign of controlling behavior." },
+            { id: 3, text: "They apologize sincerely when they are wrong and make an effort to change.", type: "green", explanation: "Everyone makes mistakes. The ability to take accountability and grow is a major green flag." },
+            { id: 4, text: "They frequently make 'jokes' at your expense, especially in front of others.", type: "red", explanation: "Disguising insults as jokes is emotional undermining. A partner should be your supporter, not your bully." },
+            { id: 5, text: "They encourage you to spend time with your friends and pursue your own hobbies.", type: "green", explanation: "Healthy relationships allow for independence. Isolation is a common tactic in unhealthy dynamics." },
+            { id: 6, text: "They give you the 'silent treatment' for days when they are upset.", type: "red", explanation: "Stonewalling or the silent treatment is a manipulative tactic used to punish, rather than communicate." },
+            { id: 7, text: "They respect your boundaries, even when they don't personally agree with them.", type: "green", explanation: "No means no. Respecting boundaries shows they respect you as an autonomous person." },
+            { id: 8, text: "They constantly compare you to their ex-partners.", type: "red", explanation: "This creates insecurity. You should be appreciated for who you are, not measured against a ghost." },
+            { id: 9, text: "They celebrate your successes without getting jealous or competitive.", type: "green", explanation: "A healthy partner views your wins as shared joy, not a threat to their ego." },
+            { id: 10, text: "They make you feel guilty for their own emotional outbursts.", type: "red", explanation: "You are not responsible for managing another adult's emotions. Blame-shifting is a red flag." },
+            { id: 11, text: "They love-bomb you with excessive gifts and affection immediately after meeting.", type: "red", explanation: "Love-bombing is often used to gain trust quickly in order to manipulate later." },
+            { id: 12, text: "They are kind to service workers (waiters, drivers, cashiers).", type: "green", explanation: "How someone treats people who 'serve' them is a true test of character and empathy." }
+        ];
+
+        // State
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let isFeedbackMode = false;
+
+        // Elements
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const questionText = document.getElementById('question-text');
+        const questionNumber = document.getElementById('question-number');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCard = document.getElementById('question-card');
+        const buttonsContainer = document.getElementById('buttons-container');
+        const feedbackContainer = document.getElementById('feedback-container');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackText = document.getElementById('feedback-text');
+        const nextBtnText = document.getElementById('next-btn-text');
+        const feedbackIconContainer = document.getElementById('feedback-icon-container');
+
+        // Logic
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function startQuiz() {
+            currentQuestions = shuffleArray(allQuestions);
+            currentIndex = 0;
+            score = 0;
+            isFeedbackMode = false;
+            
+            // UI Resets
+            startScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            quizScreen.classList.add('flex');
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = currentQuestions[currentIndex];
+            isFeedbackMode = false;
+
+            // Reset Card Styles
+            questionCard.className = "relative bg-white/80 backdrop-blur-xl border border-white/60 rounded-3xl shadow-xl p-8 min-h-[240px] flex flex-col items-center justify-center text-center transition-all duration-300";
+            
+            // Hide Feedback Icon
+            feedbackIconContainer.classList.add('hidden');
+            feedbackIconContainer.classList.remove('scale-100');
+            feedbackIconContainer.classList.add('scale-0');
+
+            // Set Text
+            questionNumber.textContent = `Scenario ${currentIndex + 1}`;
+            questionText.textContent = `"${q.text}"`;
+
+            // Progress Bar
+            const progress = ((currentIndex) / currentQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Toggle Controls
+            buttonsContainer.classList.remove('hidden');
+            buttonsContainer.classList.add('grid');
+            feedbackContainer.classList.add('hidden');
+        }
+
+        function handleAnswer(type) {
+            const q = currentQuestions[currentIndex];
+            const isCorrect = type === q.type;
+            isFeedbackMode = true;
+
+            if (isCorrect) score++;
+
+            // Animation & Styles for Card
+            if (isCorrect) {
+                questionCard.classList.add('shadow-green-500/10', 'ring-2', 'ring-green-500/50');
+                feedbackIconContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-emerald-500 fill-emerald-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>`;
+            } else {
+                questionCard.classList.add('shadow-rose-500/10', 'ring-2', 'ring-rose-500/50');
+                feedbackIconContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-rose-500 fill-rose-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>`;
+            }
+
+            // Show Feedback Icon
+            feedbackIconContainer.classList.remove('hidden');
+            // Trigger animation slightly after remove hidden
+            setTimeout(() => {
+                feedbackIconContainer.classList.remove('scale-0');
+                feedbackIconContainer.classList.add('scale-100');
+            }, 10);
+
+            // Hide buttons, show feedback text
+            buttonsContainer.classList.add('hidden');
+            buttonsContainer.classList.remove('grid');
+            
+            feedbackContainer.classList.remove('hidden');
+            // Animate feedback container entry
+            feedbackContainer.classList.add('fade-in');
+
+            feedbackTitle.textContent = q.type === 'red' ? "It's a Red Flag 🚩" : "It's a Green Flag 💚";
+            feedbackText.textContent = q.explanation;
+            
+            if (currentIndex === currentQuestions.length - 1) {
+                nextBtnText.textContent = "See Final Score";
+            } else {
+                nextBtnText.textContent = "Next Question";
+            }
+        }
+
+        function nextQuestion() {
+            feedbackContainer.classList.remove('fade-in'); // Reset animation class
+            if (currentIndex < currentQuestions.length - 1) {
+                currentIndex++;
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            quizScreen.classList.add('hidden');
+            quizScreen.classList.remove('flex');
+            resultScreen.classList.remove('hidden');
+            resultScreen.classList.add('flex');
+
+            // Populate Score Data
+            const percentage = Math.round((score / currentQuestions.length) * 100);
+            document.getElementById('final-percent').textContent = `${percentage}%`;
+            document.getElementById('score-correct').textContent = score;
+            document.getElementById('score-incorrect').textContent = currentQuestions.length - score;
+
+            // Titles
+            const titleEl = document.getElementById('result-title');
+            const descEl = document.getElementById('result-desc');
+            const circle = document.getElementById('score-circle');
+
+            if (percentage === 100) {
+                titleEl.textContent = "Relationship Guru! 🏆";
+                descEl.textContent = "You have flawless intuition.";
+                circle.setAttribute('stroke', '#10b981'); // Green
+            } else if (percentage >= 80) {
+                titleEl.textContent = "Emotionally Intelligent! 🧠";
+                descEl.textContent = "You spot the signs with ease.";
+                circle.setAttribute('stroke', '#10b981');
+            } else if (percentage >= 60) {
+                titleEl.textContent = "Not Bad! 👍";
+                descEl.textContent = "You've got the basics down.";
+                circle.setAttribute('stroke', '#f59e0b'); // Yellow/Orange
+            } else {
+                titleEl.textContent = "Be Careful Out There! 🚩";
+                descEl.textContent = "Time to brush up on healthy boundaries.";
+                circle.setAttribute('stroke', '#f43f5e'); // Red
+            }
+
+            // Animate Circle
+            // Circumference of radius 70 is approx 440
+            const circumference = 440;
+            const offset = circumference - ((score / currentQuestions.length) * circumference);
+            
+            // Reset first to allow animation trigger
+            circle.style.strokeDashoffset = 440;
+            setTimeout(() => {
+                circle.style.strokeDashoffset = offset;
+            }, 100);
+        }
+
+    </script>
+</body>
+</html>
+
